@@ -2,17 +2,14 @@
 
 runoncepath("0:/libs/file").
 
-local MODE_PATH to "1:/env/mode".
-
 local env to lex(
-    "should_exit", false,
-    "mode", read_sf(MODE_PATH):tonumber(0)
+    "should_exit", false
 ).
 local wid to lex().
 local wcl to lex().
 local mlog to list().
 
-runpath("0:/programs/historian/view", env, wid, wcl, mlog).
+runpath("0:/programs/ascent/view", env, wid, wcl, mlog).
 
 local window to wid:window.
 

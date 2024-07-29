@@ -120,12 +120,12 @@ function del_cb {
 function save_cb {
     if (env:mode = 0) {
         write_sf(stringify(), wid:file:text, false).
-    } else if (env:mode = 1) {
+    } else if (env:mode = 1 and exists(wid:file:text)) {
         local lines to read_lf(wid:file:text).
         if (lines:empty) {return.}
         set lines[clamp(lines:length - wid:index:text:tonumber(0) - 1, 0, lines:length - 1)] to stringify().
         write_lf(lines, wid:file:text).
-    } else if (env:mode = 2) {
+    } else if (env:mode = 2 and exists(wid:file:text)) {
         local lines to read_lf(wid:file:text).
         if (lines:empty) {return.}
         lines:remove(clamp(lines:length - wid:index:text:tonumber(0) - 1, 0, lines:length - 1)).
@@ -167,22 +167,25 @@ function stringify {
 }
 
 function parse {
-    local lines to read_lf(choose read_sf(FILE_PATH) if not wid:haskey("file") else wid:file:text).
+    local datapath to choose read_sf(FILE_PATH) if not wid:haskey("file") else wid:file:text.
     local data to list().
-    for line in lines {
-        local parts to line:split("; ").
-        if (parts:length = 9) {
-            data:add(lex(
-                "ut", parts[0]:tonumber(0),
-                "date", parts[1],
-                "time", parts[2],
-                "vehicle", parts[3]:replace(char(34), ""),
-                "mission", parts[4]:replace(char(34), ""),
-                "flight", parts[5]:tonumber(0),
-                "attempt", parts[6]:tonumber(0),
-                "status", parts[7]:replace(char(34), ""),
-                "details", parts[8]:replace(char(34), "")
-            )).
+    if (exists(datapath)) {
+        local lines to read_lf(datapath).
+        for line in lines {
+            local parts to line:split("; ").
+            if (parts:length = 9) {
+                data:add(lex(
+                    "ut", parts[0]:tonumber(0),
+                    "date", parts[1],
+                    "time", parts[2],
+                    "vehicle", parts[3]:replace(char(34), ""),
+                    "mission", parts[4]:replace(char(34), ""),
+                    "flight", parts[5]:tonumber(0),
+                    "attempt", parts[6]:tonumber(0),
+                    "status", parts[7]:replace(char(34), ""),
+                    "details", parts[8]:replace(char(34), "")
+                )).
+            }
         }
     }
     return data.
@@ -195,7 +198,7 @@ function parse {
 // eg. if there are 3 launches, the first one has a pad failure, the second one is successful and the third one is the second attempt of the first launch.
 // the third one should be flight 1 attempt 2, but will be flight 2 attempt 2
 function flight_num {
-    return (count(parse(), {parameter d. return d:vehicle = vehicle_name() and (not d:status = "pad failure").}) + 1):tostring.
+    return (count(parse(), {parameter d. return d:vehicle = vehicle_name() and d:status <> "pad failure".}) + 1):tostring.
 }
 
 // attempt_num doesn't get the correct value at all, but it's better then nothing
