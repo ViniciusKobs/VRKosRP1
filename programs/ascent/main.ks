@@ -3,7 +3,17 @@
 runoncepath("0:/libs/file").
 
 local env to lex(
-    "should_exit", false
+    "should_exit", false,
+    "launch", false,
+    "launch_params", lex(
+        "enabled", true,
+        "pitch_program_entry", 0,
+        "pitch_program", list(
+            list(0,0,45,45),
+            list(0,500,5e4,1e9)
+        ),
+        "azimuth", 0
+    )
 ).
 local wid to lex().
 local wcl to lex().
@@ -39,6 +49,11 @@ function main {
                 clearguis().
                 shutdown.
             }
+        }
+
+        if (env:launch) {
+            runpath("0:/programs/ascent/launch", env).  
+            set env:launch to false.
         }
 
         wait 0.
