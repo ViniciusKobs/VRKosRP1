@@ -8,11 +8,10 @@ local env to lex(
     "launch_params", lex(
         "enabled", true,
         "pitch_program_entry", 0,
-        "pitch_program", list(
-            list(0,0,45,45),
-            list(0,500,5e4,1e9)
-        ),
-        "azimuth", 0
+        "pitch_program", list(0,0),
+        "azimuth", 0,
+        "time", 0,
+        "events", list()
     )
 ).
 local wid to lex().

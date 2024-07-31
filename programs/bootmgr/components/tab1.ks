@@ -6,6 +6,7 @@ local MODE_PATH to "1:/env/mode".
 local bootpop_list to lex(
     "bootmgr", "0:/programs/bootmgr/main",
     "historian", "0:/programs/historian/main",
+    "ascent", "0:/programs/ascent/main",
     "none", ""
 ).
 

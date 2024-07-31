@@ -1,7 +1,3 @@
-if (not (defined NL)) {
-    global NL to char(10).
-}
-
 // intended for use with angles
 function abs_mod {
     local parameter a, b is 360.
@@ -57,6 +53,30 @@ function count {
     return c.
 }
 
+function sort {
+    local parameter l, cb.
+    local nl to l:copy.
+    local i to 0.
+    until (i >= nl:length) {
+        local swp to false.
+        local j to 0.
+        until (j >= (nl:length - 1)) {
+            if (cb(nl[j], nl[j + 1])) {
+                local tmp to nl[j].
+                set nl[j] to nl[j + 1].
+                set nl[j + 1] to tmp.
+                set swp to true.
+            }
+            set j to j + 1.
+        }
+        if (not swp) {
+            break.
+        }
+        set i to i + 1.
+    }
+    return nl.
+}
+
 function clamp {
     parameter n, mn, mx.
     return max(mn, min(mx, n)).
@@ -95,6 +115,24 @@ function format_float {
 function format_vector {
     parameter vec, rp is 2.
     return "[ " + format_float(vec:x, rp) + ", " + format_vector(vec:y, rp) + ", " + format_float(vec:z, rp) + " ]".
+}
+
+function format_list {
+    parameter l, layer is 1.
+    local lstr to "[":padleft((layer - 1)*2) + char(10).
+    from {local i to 0.} until (i >= l:length) step {set i to i + 1.} do {
+        set lstr to lstr + (choose l[i]:tostring:padleft(layer*2) if l[i]:typename <> "list" else format_list(l[i], layer+1)) + (choose (", " + char(10)) if i < l:length - 1 else ("" + char(10))).
+    }
+    return lstr + "]":padleft((layer - 1)*2).
+}
+
+function format_list_il {
+    parameter l.
+    local lstr to "[".
+    from {local i to 0.} until (i >= l:length) step {set i to i + 1.} do {
+        set lstr to lstr + (choose l[i]:tostring if l[i]:typename <> "list" else format_list_il(l[i])) + (choose ", " if i < l:length - 1 else "").
+    }
+    return lstr + "]".
 }
 
 function is_leap_year {
@@ -139,6 +177,13 @@ function rssdate {
     }   
 
     return year + "-" + format_int(mon) + "-" + format_int(day).
+}
+
+function concat {
+    local parameter l1, l2.
+    for i in l2 {
+        l1:add(i).
+    }
 }
 
 // ------------ OLD UTIL FUNCTIONS ---------------

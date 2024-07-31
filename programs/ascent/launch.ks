@@ -2,28 +2,7 @@
 
 parameter env.
 
-// triggers: alt - altitude, ap - apoapsis, sv - surface velocity, ov - orbital velocity, t - time from launch, f - thrust, q - dynamic pressure(Q), id - time from event with id activated 
-// triggers operators: <, >, =, *, +
-// actions: stage, abort, disengage, range, cb: - callback, throttle:, lock:, debug:
-// actions operators: *
-
-//local event to "0; alt:>500 * svel<1000; debug:hello * throttle:.5; 2".
-//local eventstrut to list(
-    //"0",
-    //list(
-        //list(
-            //list("alt", ">", "500"),
-            //list("svel", "<", "1000")
-        //),
-        //list("*")
-    //),
-    //list(
-        //list("debug", "hello"),
-        //list("throttle", ".5")
-    //),
-    //2
-//).
-
+// operators callbacks
 local OP_CBS to lex(
     "<", {parameter a, b. return a < b.  },
     ">", {parameter a, b. return a > b.  },
@@ -32,59 +11,70 @@ local OP_CBS to lex(
     "+", {parameter a, b. return a or b. }
 ).
 
+// trigger callbacks
 local T_CBS to lex(
     "alt",  { return ship:altitude.             },
     "ap",   { return ship:apoapsis.             },
     "svel", { return ship:velocity:surface:mag. },
     "ovel", { return ship:velocity:orbit:mag.   },
-    "t",    { return time:seconds.              },
-    "f",    { return ship:availablethrust.      },
-    "q",    { return ship:q.                    }
-    // "id", { // not decided how to implement yet }
+    "t",    { return GET_LAUNCH_TIME().         },
+    "f",    { return maxthrust.                 },
+    "q",    { return ship:q.                    },
+    "stg",  { return ship:stagenum.             },
+    // special triggers
+    "id", {
+        parameter op, val.
+        local splt to val:split(",").
+        return done_events:haskey(splt[0]) and OP_CBS[op:replace("=", ">")](GET_LAUNCH_TIME(), done_events[splt[0]] + splt[1]:tonumber(0)).
+    }
 ).
 
+// action callbacks
 local A_CBS to lex(
-    "stage",     { parameter _p. stage.                       },
-    "abort",     { parameter _p. abort.                       },
+    "stage",     { parameter _p. stage. },
+    "abort",     { parameter _p. abort on. },
     "disengage", { parameter _p. set env:should_exit to true. },
-    //"range",   { flight_termination() },
+    "unlock",    { parameter _p. unlock steering. },
+    "throttle",  { parameter p. set ship:control:pilotmainthrottle to p. },
+    "range",     { parameter _p. terminate_flight(). },
+    "wait",      { parameter p. wait p. }
     //"cb",      { // run user callbacks },
-    "throttle",  { parameter p. set guidance:throttle to p.   },
     //"lock",    { parameter p. // not decided what this will do yet },
-    "debug",     { parameter p. mlog:add(p).                  }
 ).
 
 local ENABLED to env:launch_params:enabled.
 local PITCH_PROGRAM_ENTRY to env:launch_params:pitch_program_entry.
 local PITCH_PROGRAM to env:launch_params:pitch_program.
 local AZIMUTH to env:launch_params:azimuth.
+local EVENTS_STR to env:launch_params:events.
+function SET_LAUNCH_TIME { parameter t. set env:launch_params:time to t. }.
+function GET_LAUNCH_TIME { return env:launch_params:time. }.
 
 local guidance to lex(
     "pitch", 0,
     "yaw", 90 - AZIMUTH,
-    "roll", -90,
-    "throttle", 0
+    "roll", -90
 ).
 local mlog to list().
 
-local testevent to "0;alt:>750*svel:<200;debug:hello*stage;2".
-
-local events to list().
-local done_events to list().
+local events to map(EVENTS_STR, {parameter e. return parse_event(e).}).
+local done_events to lex().
 
 function launch {
     if (ENABLED) { lock steering to heading(guidance:yaw, 90 - guidance:pitch, guidance:roll). }
     local t0 to time:seconds.
     until env:should_exit {
-        local uptime to time:seconds - t0.
+        local uptime to time:seconds - t0. SET_LAUNCH_TIME(uptime).
 
-        // TODO: replace with "report_info()" function
-        clearscreen. print(
+        local msg to (
             "GUIDANCE CONTROL INITIATED" + char(10) + " " + char(10) +
             "UPTIME: " + floor(uptime, 2) + char(10) + " " + char(10) +
+            //(map(events,{parameter e. return format_list_il(e).}):join(char(10))) + char(10) + " " + char(10) +
+            //format_list_il(done_events:keys) + char(10) + " " + char(10) +
             mlog:join(char(10))
-        ).
+        ). clearscreen. print(msg).
 
+        handle_events().
         update_pitch().
         wait 0.
     }
@@ -112,38 +102,53 @@ function update_pitch {
     set guidance:pitch to (m*(entry - x1)) + y1.
 }
 
-// FUNCTION NOT TESTED YET
 function handle_events {
     local done to list().
 
     from {local i to 0.} until (i >= events:length) step {set i to i + 1.} do {
         local e to events[i].
 
-        local ts to e[1][1]. 
-        local tsops to e[1][2]. 
+        local ts to e[1][0]. 
+        local tsops to e[1][1]. 
 
         local acc to check_trigger(ts[0]).
-        from {local j to 1.} until (j >= ts:length - 1) step {set j to j + 1.} do {
+        from {local j to 1.} until (j > ts:length - 1) step {set j to j + 1.} do {
             set acc to OP_CBS[tsops[j-1]](acc, check_trigger(ts[j])).
         }
 
         if (acc) {
             local as to e[2].
-            for a in as { A_CBS[a[0]](a[1]). }
+            for a in as { mlog:add("executing action: " + a[0]). A_CBS[a[0]](a[1]). }
             set e[3] to e[3] - 1.
-            if (e[3] = 0) { done:add(i). }
+            if (e[3] <= 0) { done:add(i). }
+            if (e[4] <> "") {
+                local ids to e[4]:split(",").
+                for id in ids {
+                    local index to event_index(id).
+                    if (index >= 0) { done:add(index). }
+                }
+            }
         }
     }
 
-    from {local i to done:length - 1.} until (i < done:length) step {set i to i - 1.} do {
-        set done_events to done_events:add(events[done[i]]).
-        set events to events:remove(done[i]).
+    for i in sort(done, {parameter a, b. return a<b.}) {
+        set done_events[events[i][0]] to GET_LAUNCH_TIME().
+        events:remove(i).
     }
 }
 
 function check_trigger {
     parameter t.
+    if (t[0] = "id") { return T_CBS[t[0]](t[1],t[2]). }
     return OP_CBS[t[1]](T_CBS[t[0]](), t[2]:tonumber(0)).
+}
+
+function event_index {
+    parameter id.
+    from {local i to 0.} until (i >= events:length) step {set i to i + 1.} do {
+        if (events[i][0] = id) { return i. }
+    }
+    return -1.
 }
 
 function parse_event {
@@ -155,9 +160,11 @@ function parse_event {
         esplit[0],
         triggers,
         actions,
-        esplit[3]:tonumber(0)
+        esplit[3]:tonumber(0),
+        choose "" if esplit:length = 4 else esplit[4]
     ).
 }
+
 
 function trigger_struct {
     parameter tstr.
@@ -166,10 +173,11 @@ function trigger_struct {
 
     for t in tstr:replace("+","*"):split("*") {
         local tsplit to t:split(":").
+        local has_op to (tsplit[1][0] = "<" or tsplit[1][0] = ">" or tsplit[1][0] = "=").
         triggers[0]:add(list(
             tsplit[0],
-            choose tsplit[1][0] if (tsplit[1][0] = "<" or tsplit[1][0] = ">") else "=",
-            choose tsplit[1] if (tsplit[1][0]:tonumber(-1) >= 0) else tsplit[1]:substring(1, tsplit[1]:length - 1)
+            choose tsplit[1][0] if has_op else "=",
+            choose tsplit[1]:substring(1, tsplit[1]:length - 1) if has_op else tsplit[1]
         )).
     }
 
@@ -192,6 +200,12 @@ function action_struct {
     }
 
     return actions.
+}
+
+function terminate_flight {
+    if (core:part:hasmodule("modulerangesafety")) {
+        core:part:getmodule("modulerangesafety"):doaction("range safety", true).
+    }
 }
 
 launch().

@@ -1,5 +1,7 @@
 function activate_self_destruction {
-    core:part:getmodule("modulerangesafety"):doaction("range safety", true).
+    if (core:part:hasmodule("modulerangesafety")) {
+        core:part:getmodule("modulerangesafety"):doaction("range safety", true).
+    }
 }
 
 function active_engines {
