@@ -34,12 +34,13 @@ local A_CBS to lex(
     "stage",     { parameter _p. stage. },
     "abort",     { parameter _p. abort on. },
     "disengage", { parameter _p. set env:should_exit to true. },
+    "lock",      { parameter _p. lock steering to ship:facing. },
     "unlock",    { parameter _p. unlock steering. },
+    "guide",     { parameter _p. lock steering to heading(guidance:yaw, 90 - guidance:pitch, guidance:roll). },
     "throttle",  { parameter p. set ship:control:pilotmainthrottle to p. },
     "range",     { parameter _p. terminate_flight(). },
-    "wait",      { parameter p. wait p. }
-    //"cb",      { // run user callbacks },
-    //"lock",    { parameter p. // not decided what this will do yet },
+    "wait",      { parameter p. wait p:tonumber(0). },
+    "cb",        { parameter p. if ((defined usercbs) and usercbs:haskey(p)) {usercbs[p](env).} }
 ).
 
 local ENABLED to env:launch_params:enabled.
@@ -56,14 +57,14 @@ local guidance to lex(
     "roll", -90
 ).
 local mlog to list().
-
+// TODO: filter out invalid events
 local events to map(EVENTS_STR, {parameter e. return parse_event(e).}).
 local done_events to lex().
 
 function launch {
     if (ENABLED) { lock steering to heading(guidance:yaw, 90 - guidance:pitch, guidance:roll). }
     local t0 to time:seconds.
-    until env:should_exit {
+    until (env:should_exit) {
         local uptime to time:seconds - t0. SET_LAUNCH_TIME(uptime).
 
         local msg to (
@@ -200,12 +201,6 @@ function action_struct {
     }
 
     return actions.
-}
-
-function terminate_flight {
-    if (core:part:hasmodule("modulerangesafety")) {
-        core:part:getmodule("modulerangesafety"):doaction("range safety", true).
-    }
 }
 
 launch().

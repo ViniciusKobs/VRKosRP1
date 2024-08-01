@@ -6,8 +6,9 @@ runoncepath("0:/libs/gui").
 runoncepath("0:/libs/util").
 
 local widgets to lex().
-runpath("0:/programs/ascent/components/titlebar", widgets, env, wid, wcl, mlog).
-runpath("0:/programs/ascent/components/tab1", widgets, env, wid, wcl, mlog).
+runpath("0:/programs/pegasgui/components/titlebar", widgets, env, wid, wcl, mlog).
+runpath("0:/programs/pegasgui/components/mission", widgets, env, wid, wcl, mlog).
+runpath("0:/programs/pegasgui/components/tools", widgets, env, wid, wcl, mlog).
 
 create_element(wid, wcl, list(), lex(
     "t", "gui",
@@ -16,7 +17,8 @@ create_element(wid, wcl, list(), lex(
     "child", list(
         widgets:titlebar,
         lex("t", "vlayout", "id", "cont", "child", list(
-            widgets:tab1
+            widgets:mission,
+            widgets:tools
         ))
     )
 )).

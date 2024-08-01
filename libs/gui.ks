@@ -45,6 +45,7 @@ local params_cbs to lex(
     "ot", { parameter wdgt, val. set wdgt:ontoggle to val.         },
     "pr", { parameter wdgt, val. set wdgt:pressed to val.          },
     "op", { parameter wdgt, val. set wdgt:options to val.          },
+    "i",  { parameter wdgt, val. set wdgt:index to val.            },
     "v",  { parameter wdgt, val. set wdgt:visible to val.          },
     "e",  { parameter wdgt, val. set wdgt:enabled to val.          },
     "f",  { parameter wdgt, val. set wdgt:style:font to val.       },

@@ -186,6 +186,12 @@ function concat {
     }
 }
 
+function terminate_flight {
+    if (core:part:hasmodule("modulerangesafety")) {
+        core:part:getmodule("modulerangesafety"):doaction("range safety", true).
+    }
+}
+
 // ------------ OLD UTIL FUNCTIONS ---------------
 // TODO: review, rewrite and remove functions as needed
 

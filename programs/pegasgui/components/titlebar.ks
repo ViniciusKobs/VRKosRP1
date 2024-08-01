@@ -13,7 +13,7 @@ set w:titlebar to lex(
         lex(
             "t", "label",
             "params", lex(
-                "t", "Ascent Control",
+                "t", "Historian",
                 "fs", 15,
                 "vs", true
             )
