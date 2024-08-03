@@ -2,8 +2,14 @@
 
 runoncepath("0:/libs/file").
 
+local BOOT_PATH to "1:/env/boot".
+local HOME_PATH to "0:/programs/bootmgr/main".
+local PEGAS_PATH to "0:/programs/pegas/main".
+
 local env to lex(
-    "should_exit", false
+    "should_exit", false,
+    "wait", 0,
+    "launch", false
 ).
 local wid to lex().
 local wcl to lex().
@@ -25,7 +31,9 @@ function main {
             "q to exit" + char(10) + 
             "r to reboot" + char(10) + 
             "s to shutdown" + char(10) + " " + char(10) +
-            "messages:" + char(10) + mlog:join(char(10))
+            "messages:" + char(10) +
+            (choose "" if time:seconds > env:wait else ("waiting for: " + format_float(env:wait - time:seconds))) + char(10) +
+            mlog:join(char(10))
         ).
 
         if (terminal:input:haschar) {
@@ -39,6 +47,17 @@ function main {
                 clearguis().
                 shutdown.
             }
+        }
+
+        if (env:wait > time:seconds) {
+        }
+
+        if (env:launch and time:seconds >= env:wait) {
+            set_mission().
+            clearguis().
+            runpath(PEGAS_PATH).
+            write_sf(HOME_PATH, BOOT_PATH).
+            reboot.
         }
 
         wait 0.

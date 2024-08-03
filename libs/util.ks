@@ -1,4 +1,4 @@
-// intended for use with angles
+// intended for use only with angles
 function abs_mod {
     local parameter a, b is 360.
     local abs_b to abs(b).
@@ -190,6 +190,25 @@ function terminate_flight {
     if (core:part:hasmodule("modulerangesafety")) {
         core:part:getmodule("modulerangesafety"):doaction("range safety", true).
     }
+}
+
+function list_targets {
+    // not shure if the variable targets are being listed in is global or local
+    // so just in case name it something random
+    list targets in xyzxyz.
+    return xyzxyz.
+}
+
+function vessel_exists {
+    parameter name.
+    return count(list_targets(), {parameter t. return t:name = name.}) > 0.
+}
+
+// interrupt print
+function iprint {
+    parameter str.
+    print(str).
+    terminal:input:getchar().
 }
 
 // ------------ OLD UTIL FUNCTIONS ---------------

@@ -8,7 +8,7 @@ local presets to open(PRESETS_PATH):lex:keys.
 local entries to list("Altitude", "Apoapsis").
 
 local tags to tag_parse().
-local vehicle to choose ship:name:split("-")[0]:replace(" ", "_"):tolower:trim if not tags:haskey("v") else tags:v.
+local vehicle to choose ship:name:split("-")[0]:trim:replace(" ", "_"):tolower if not tags:haskey("v") else tags:v.
 
 set w:tab1 to lex("t", "hlayout", "id", "tab1", "params", lex("v", true, "p", recn(5)), "child", list(
     // left column

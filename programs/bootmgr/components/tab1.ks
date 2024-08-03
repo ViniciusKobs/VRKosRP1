@@ -3,10 +3,13 @@ parameter w, env, wid, wcl, mlog.
 local BOOT_PATH to "1:/env/boot".
 local MODE_PATH to "1:/env/mode".
 
+// TODO: dynamically create list based off of config file in disk
+// TODO: add option to save new boot file
 local bootpop_list to lex(
     "bootmgr", "0:/programs/bootmgr/main",
     "historian", "0:/programs/historian/main",
     "ascent", "0:/programs/ascent/main",
+    "pegas", "0:/programs/pegasgui/main",
     "none", ""
 ).
 

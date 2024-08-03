@@ -1,1 +1,7 @@
-print("A":replace("A","a")).
+until false {
+clearscreen. print(
+(body:rotationangle + ship:longitude) + char(10) +
+(orbit:lan)
+).
+wait 0.
+}

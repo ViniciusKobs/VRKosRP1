@@ -1,8 +1,8 @@
 parameter widgets, env, wid, wcl, mlog.
 
 set widgets:tabs to lex("t", "hlayout", "params", lex("p", recn(5,0)), "child", list(
-    lex("t", "button", "params", lex("t", "mission", "oc", mission_cb@, "h", 20, "m", recnn(0,5,0,0))),
-    lex("t", "button", "params", lex("t", "tools", "oc", tools_cb@, "h", 20))
+    lex("t", "button", "params", lex("t", "Mission", "oc", mission_cb@, "h", 22, "m", recnn(0,5,0,0))),
+    lex("t", "button", "params", lex("t", "Tools", "oc", tools_cb@, "h", 22))
 )).
 
 function mission_cb {
