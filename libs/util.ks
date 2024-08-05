@@ -22,8 +22,9 @@ function stob {
     return s = "true".
 }
 
+// todo: replace current loop with from loop
 function map {
-    local parameter l, cb.
+    parameter l, cb.
     local nl to list().
     for i in l {
         nl:add(cb(i)).
@@ -31,8 +32,9 @@ function map {
     return nl.
 }
 
+// todo: replace current loop with from loop
 function filter {
-    local parameter l, cb.
+    parameter l, cb.
     local fl to list().
     for i in l {
         if (cb(i)) {
@@ -42,8 +44,9 @@ function filter {
     return fl.
 }
 
+// todo: replace current loop with from loop
 function count {
-    local parameter l, cb.
+    parameter l, cb.
     local c to 0.
     for i in l {
         if (cb(i)) {
@@ -53,8 +56,9 @@ function count {
     return c.
 }
 
+// todo: replace current loop with from loop
 function sort {
-    local parameter l, cb.
+    parameter l, cb is {parameter a, b. return a > b.}.
     local nl to l:copy.
     local i to 0.
     until (i >= nl:length) {
@@ -73,6 +77,17 @@ function sort {
             break.
         }
         set i to i + 1.
+    }
+    return nl.
+}
+
+function unique {
+    parameter l, cb is {parameter a, b. return a = b.}.
+    local nl to list().
+    from {local i to 0.} until (i >= l:length) step {set i to i + 1.} do {
+        if (count(nl, {parameter n. return cb(n, l[i]).}) = 0) {
+            nl:add(l[i]).
+        } 
     }
     return nl.
 }

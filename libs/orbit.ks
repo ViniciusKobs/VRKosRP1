@@ -1,3 +1,12 @@
+// some useful information:
+// elipse equation: x^2/a^2 + y^2/b^2 = 1
+// sma = a
+// ecc = sqrt(1 - b^2/a^2)
+// c = a * ecc // sma * ecc
+// pe = a - c // sma - sma * ecc
+// ap = a + c // sma + sma * ecc
+
+
 runoncepath("0:libs/util.ks").
 runoncepath("0:libs/math.ks").
 

@@ -5,7 +5,7 @@ local VEHICLES_PATH to "0:/disk/pegas/vehicles/".
 
 local missions to open(MISSIONS_PATH):lex:keys.
 local vehicles to open(VEHICLES_PATH):lex:keys.
-local vehicle_name to ship:name:split("-")[0]:trim:replace(" ", "_"):tolower.
+local vehicle_name to ship:name:split("-")[0]:trim:replace(" ", "_"):tolower + ".ks".
 local directions to list("Nearest", "North", "South").
 local targets to get_rdzv_targets().
 
@@ -14,29 +14,29 @@ set widgets:mission to lex("t", "hlayout", "id", "mission", "params", lex("p", r
         lex("t", "label", "params", lex("t", "Apsidal parameters", "m", recnn(0,0,10,0), "fs", 18)),
         lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
             lex("t", "label", "params", lex("t", "ap/pe(km)")),
-            lex("t", "field", "id", "ap", "params", lex("t", "180", "w", 100)),
-            lex("t", "field", "id", "pe", "params", lex("t", "180", "w", 100))
+            lex("t", "field", "id", "ap", "params", lex("t", "180", "w", 100, "p", recn(3,0))),
+            lex("t", "field", "id", "pe", "params", lex("t", "180", "w", 100, "p", recn(3,0)))
         )),
         lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
             lex("t", "label", "params", lex("t", "sma(km)/ecc")),
-            lex("t", "field", "id", "sma", "params", lex("t", "", "w", 100)),
-            lex("t", "field", "id", "ecc", "params", lex("t", "", "w", 100))
+            lex("t", "field", "id", "sma", "params", lex("t", "", "w", 100, "p", recn(3,0))),
+            lex("t", "field", "id", "ecc", "params", lex("t", "", "w", 100, "p", recn(3,0)))
         )),
         lex("t", "label", "params", lex("t", "Inclination parameters", "m", recnn(15,0,10,0), "fs", 18)),
         lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
             lex("t", "label", "params", lex("t", "inc/lan(deg)")),
-            lex("t", "field", "id", "inc", "params", lex("t", "", "w", 100)),
-            lex("t", "field", "id", "lan", "params", lex("t", "", "w", 100))
+            lex("t", "field", "id", "inc", "params", lex("t", "", "w", 100, "p", recn(3,0))),
+            lex("t", "field", "id", "lan", "params", lex("t", "", "w", 100, "p", recn(3,0)))
         )),
         lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
             lex("t", "label", "params", lex("t", "Target", "m", recnn(0,0,10,0))),
-            lex("t", "field", "id", "target", "params", lex("t", "", "w", 170)),
+            lex("t", "field", "id", "target", "params", lex("t", "", "w", 170, "p", recn(3,0))),
             lex("t", "popup", "params", lex("t", "Targets", "i", -1, "op", targets, "och", tgt_pop_cb@, "w", 100))
         )),
         lex("t", "label", "params", lex("t", "Flight parameters", "m", recnn(15,0,10,0), "fs", 18)),
         lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
             lex("t", "label", "params", lex("t", "Insertion altitude(km)")),
-            lex("t", "field", "id", "alt", "params", lex("t", "", "w", 100))
+            lex("t", "field", "id", "alt", "params", lex("t", "", "w", 100, "p", recn(3,0)))
         )),
         lex("t", "hlayout", "child", list(
             lex("t", "label", "params", lex("t", "Direction")),
@@ -47,7 +47,7 @@ set widgets:mission to lex("t", "hlayout", "id", "mission", "params", lex("p", r
         lex("t", "vlayout", "id", "lbox", "child", list(
             lex("t", "label", "params", lex("t", "Mission", "m", recnn(0,0,5,0))),
             lex("t", "popup", "params", lex("t", "Missions", "i", -1, "op", missions, "och", mission_pop_cb@, "m", recnn(0,0,5,0), "h", 22)),
-            lex("t", "field", "id", "mname", "params", lex("t", choose "" if (ship:name:split("-"):length <= 1) else ship:name:split("-")[1]:trim:tolower:replace(" ", "_"), "m", recnn(0,0,5,0))),
+            lex("t", "field", "id", "mname", "params", lex("t", choose "" if (ship:name:split("-"):length <= 1) else ship:name:split("-")[1]:trim:tolower:replace(" ", "_"), "m", recnn(0,0,5,0), "p", recn(3,0))),
             lex("t", "hlayout", "child", list(
                 lex("t", "button", "params", lex("t", "Load", "oc", mission_load_cb@, "m", recnn(0,0,5,0), "h", 22)),
                 lex("t", "button", "params", lex("t", "Save", "oc", mission_save_cb@, "m", recnn(0,0,5,0), "h", 22))
@@ -55,7 +55,7 @@ set widgets:mission to lex("t", "hlayout", "id", "mission", "params", lex("p", r
             lex("t", "label", "params", lex("t", "Vehicle", "m", recnn(0,0,5,0))),
             lex("t", "popup", "id", "vehicle", "params", lex("t", (choose vehicle_name if vehicles:find(vehicle_name) >= 0 else "Vehicles"), "i", vehicles:find(vehicle_name), "op", vehicles, "m", recnn(0,0,5,0), "h", 22)),
             lex("t", "label", "params", lex("t", "Wait", "m", recnn(0,0,5,0))),
-            lex("t", "field", "id", "wait", "params", lex("t", "10", "m", recnn(0,0,5,0))),
+            lex("t", "field", "id", "wait", "params", lex("t", "10", "m", recnn(0,0,5,0), "p", recn(3,0))),
             lex("t", "button", "params", lex("t", "Launch", "oc", launch_cb@, "m", recnn(0,0,5,0), "h", 22))
         )),
         lex("t", "button", "id", "cancel", "params", lex("t", "Cancel", "v", false, "oc", cancel_cb@, "h", 22))
@@ -112,6 +112,7 @@ function launch_cb {
         abort off.
         set wid:mbox:enabled to false.
         set wid:lbox:enabled to false.
+        set wid:tabs:enabled to false.
         set wid:cancel:visible to true.
     }
 }
@@ -121,6 +122,7 @@ function cancel_cb {
     set env:wait to 0.
     set wid:mbox:enabled to true.
     set wid:lbox:enabled to true.
+    set wid:tabs:enabled to true.
     set wid:cancel:visible to false.
 }
 
@@ -141,20 +143,41 @@ function get_payload {
 }
 
 function get_apside {
-    if (wid:sma:text <> "" and wid:ecc:text <> "") {
-        // calculate ap and pe from sma and ecc
-        // for now return default values
+    local apt to wid:ap:text.
+    local ap to wid:ap:text:tonumber(0).
+    local pet to wid:pe:text.
+    local pe to wid:pe:text:tonumber(0).
+    local smat to wid:sma:text.
+    local sma to wid:sma:text:tonumber(0).
+    local ecct to wid:ecc:text.
+    local ecc to wid:ecc:text:tonumber(0).
+
+    if (apt <> "" and pet <> "") {
         return lex(
-            "ap", 180,
-            "pe", 180
+            "ap", choose ap if (ap > pe) else pe,
+            "pe", choose pe if (pe < ap) else ap
         ).
     }
-    local ap to wid:ap:text:tonumber(180).
-    local pe to wid:pe:text:tonumber(ap).
-    return lex(
-        "ap", ap,
-        "pe", pe
-    ).
+    if (smat <> "" and ecct <> "") {
+        return lex(
+            "ap", sma + (sma*ecc),
+            "pe", sma - (sma*ecc) 
+        ).
+    }
+    if (ecct <> "" and pet <> "") {
+        set sma to pe/(1-ecc).
+        return lex(
+            "ap", sma + (sma*ecc),
+            "pe", pe
+        ).
+    }
+    if (apt <> "" or pet <> "") {
+        return lex(
+            "ap", choose ap if (apt <> "") else pe,
+            "pe", choose ap if (apt <> "") else pe
+        ).
+    }
+    return lex("ap", 180, "pe", 180).
 }
 
 function get_inclination {
