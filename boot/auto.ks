@@ -3,7 +3,6 @@ core:doevent("open terminal").
 local defp to "0:/programs/bootmgr/main".
 local benv to "1:/env/boot".
 local menv to "1:/env/mode".
-// essential ship environment variables
 local t to lex("b", defp, "m", "0").
 for i in core:tag:split(",") {
     local j to i:split("=").
@@ -17,7 +16,7 @@ if (not exists(benv)) {
 if (not exists(menv)) {
     create(menv):write(t:m).
 }
-// running program
+// this part breaks when simulating directly into orbit
 if (t:m >= 0) {
     local bp to open(benv):readall():string.
     if (bp:split(":")[0] = "0") {
