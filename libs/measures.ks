@@ -1,6 +1,6 @@
 runoncepath("0:/libs/vessel.ks").
 
-global function vessel_acceleration {
+global function vessel_acc_loop {
     local parameter cb.
 
     local dv to 0.
@@ -20,6 +20,21 @@ global function vessel_acceleration {
         set t0 to t1.
         wait 0.
     }
+}
+
+function vessel_acc {
+    local self to lex(
+        "dv", 0,
+        "t0", time:seconds,
+        "update", {
+            local t1 to time:seconds.
+            local dt to t1 - self:t0.
+            local acc to (ship:thrust/ship:mass)*dt.
+            set self:dv to self:dv + acc.
+            set self:t0 to t1.
+        }
+    ).
+    return self.
 }
 
 global function vessel_rcs_acceleration {

@@ -13,7 +13,7 @@ function attitude_cb {
     set wid:maneuver:visible to false.
     set wid:events:visible to false.
     set wid:rcs:visible to false.
-    set wid:tools:visible to false.
+    //set wid:tools:visible to false.
 }
 
 function maneuver_cb {
@@ -21,7 +21,7 @@ function maneuver_cb {
     set wid:maneuver:visible to true.
     set wid:events:visible to false.
     set wid:rcs:visible to false.
-    set wid:tools:visible to false.
+    //set wid:tools:visible to false.
 }
 
 function events_cb {
@@ -29,7 +29,7 @@ function events_cb {
     set wid:maneuver:visible to false.
     set wid:events:visible to true.
     set wid:rcs:visible to false.
-    set wid:tools:visible to false.
+    //set wid:tools:visible to false.
 }
 
 function rcs_cb {
@@ -37,7 +37,7 @@ function rcs_cb {
     set wid:maneuver:visible to false.
     set wid:events:visible to false.
     set wid:rcs:visible to true.
-    set wid:tools:visible to false.
+   //set wid:tools:visible to false.
 }
 
 function tools_cb {
