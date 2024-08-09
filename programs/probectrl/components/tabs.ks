@@ -4,8 +4,8 @@ set widgets:tabs to lex("t", "hlayout", "id", "tabs", "params", lex("p", recn(5,
     lex("t", "button", "params", lex("t", "Attitude", "oc", attitude_cb@, "h", 22, "m", recnn(0,5,0,0))),
     lex("t", "button", "params", lex("t", "Maneuver", "oc", maneuver_cb@, "h", 22, "m", recnn(0,5,0,0))),
     lex("t", "button", "params", lex("t", "Events", "oc", events_cb@, "h", 22, "m", recnn(0,5,0,0))),
-    lex("t", "button", "params", lex("t", "RCS", "oc", rcs_cb@, "h", 22, "m", recnn(0,5,0,0))),
-    lex("t", "button", "params", lex("t", "Tools", "oc", tools_cb@, "h", 22))
+    lex("t", "button", "params", lex("t", "RCS", "oc", rcs_cb@, "h", 22, "m", recnn(0,5,0,0)))//,
+    //lex("t", "button", "params", lex("t", "Tools", "oc", tools_cb@, "h", 22))
 )).
 
 function attitude_cb {

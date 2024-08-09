@@ -62,7 +62,7 @@ function label_field_pop {
                 "t", "popup",
                 "id", pid,
                 "params", lex(
-                    "w", 80,
+                    "w", 100,
                     "vs", true,
                     "m", recn(2, 0),
                     "t", pop[0],
