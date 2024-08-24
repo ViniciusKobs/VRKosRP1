@@ -194,6 +194,73 @@ function rssdate {
     return year + "-" + format_int(mon) + "-" + format_int(day).
 }
 
+function is_datetime {
+    parameter datetime.
+    return datetime:matchespattern("^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$").
+}
+
+function is_eta {
+    parameter _eta.
+    return _eta:matchespattern("^(\d+d\s*)?(\d+h\s*)?(\d+m\s*)?(\d+s\s*)?$").
+}
+
+function datetime_to_sec {
+    parameter datetime.
+
+    if (not is_datetime(datetime)) { return -1. }
+
+    local date to datetime:split(" ")[0].
+    local clock to datetime:split(" ")[1].
+
+    local datesplt to date:split("-").
+    local clocksplt to clock:split(":").
+
+    local year to datesplt[0]:tonumber(0).
+    local mon to datesplt[1]:tonumber(0).
+    local day to datesplt[2]:tonumber(0).
+    local hour to clocksplt[0]:tonumber(0).
+    local mins to clocksplt[1]:tonumber(0).
+    local sec to clocksplt[2]:tonumber(0).
+
+    local seconds to 0.
+    local y0 to 1951.
+
+    for i in range(y0,year) {
+        set seconds to seconds + 31536000 + btoi(is_leap_year(i))*86400.
+    }
+    for i in range(mon - 1) {
+        set seconds to seconds + days_in_month(i, year)*86400.
+    }
+    set seconds to seconds + ((day-1)*86400) + (hour*3600) + (mins*60) + sec.
+
+    return seconds.
+}
+
+function eta_to_sec {
+    parameter _eta.
+
+    if (not is_eta(_eta)) { return -1. }
+
+    local vals to lex(
+        "d", 0,
+        "h", 0,
+        "m", 0,
+        "s", 0
+    ).
+
+    local ops to filter(_eta, {parameter c. return "dhms":contains(c).}).
+    local split to _eta:replace(" ",""):replace("d",":"):replace("h",":"):replace("m",":"):replace("s",""):split(":").
+
+    print(ops).
+    print(split).
+
+    from {local i to 0.} until (i>=ops:length) step {set i to i + 1.} do {
+        set vals[ops[i]] to split[i]:tonumber(0).
+    }
+
+    return (vals:d*86400) + (vals:h*3600) + (vals:m*60) + vals:s.
+}
+
 function concat {
     local parameter l1, l2.
     for i in l2 {
@@ -240,6 +307,27 @@ function iprint {
     parameter str.
     print(str).
     terminal:input:getchar().
+}
+
+function eval {
+    parameter p.
+    local n to "1:f"+time:seconds.
+    if not (defined RAX) {global RAX to 0.}
+    create(n):write(p).
+    runpath(n).
+    deletepath(n).
+    return RAX.
+}
+
+function refactor {
+    parameter str.
+    local data to map(filter(str:split(char(10)), {parameter l. return l:trim <> "" and l:trim[0] <> "/".}), {parameter l. return l:trim.}):join(" ").
+    return data
+    :replace("{ ", "{")
+    :replace(" }", "}")
+    :replace("( ", "(")
+    :replace(" )", ")")
+    :replace(", ", ",").
 }
 
 // ------------ OLD UTIL FUNCTIONS ---------------
