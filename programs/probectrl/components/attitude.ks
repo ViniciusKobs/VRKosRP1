@@ -1,7 +1,5 @@
 parameter widgets, env, wid, wcl, mlog.
 
-local EVENTS_PATH to "1:evs/".
-
 local targets to list("Self", "Surface", "Orbit", "Target", "Node", "Absolute", "Body").
 local self_vecs to list("Fore", "Up", "Right").
 local surf_vecs to list("North", "Up", "East").
@@ -53,53 +51,25 @@ local spin_command to (
     "if (data:?id?[1] and ship:angularvel:mag>=?spinrate?) {set ship:control:roll to 0. ?stageafter? return true.} return false."
 ).
 
-set widgets:attitude to lex("t", "hlayout", "id", "attitude", "params", lex("v", false, "p", recn(5)), "child", list(
-    lex("t", "vbox", "params", lex("p", recn(5), "m", recnn(0,5,0,0), "w", 400), "child", list(
-        lex("t", "hlayout", "child", list(
-            lex("t", "label", "params", lex("t", "Event UT (s|date)")),
-            lex("t", "field", "id", "atteventut", "params", lex("t", "")),
-            lex("t", "label", "params", lex("t", "Event ID")),
-            lex("t", "field", "id", "atteventid", "params", lex("t", ""))
-        )),
-        lex("t", "hlayout", "child", list(
-            lex("t", "button", "id", "engage_check", "params", lex("t", "Engage: True", "oc", enabled_check_cb("engage_check", "typebox", "Engage: "))),
-            lex("t", "button", "id", "lock_check", "params", lex("t", "Lock: True", "oc", check_cb("lock_check", "Lock: "))),
-            lex("t", "button", "id", "spin_check", "params", lex("t", "Spin: False", "oc", enabled_check_cb("spin_check", "spin", "Spin: ")))
-        )),
-        lex("t", "vlayout", "id", "typebox", "child", list(
-            lex("t", "hlayout", "child", list(
-                lex("t", "label", "params", lex("t", "Fore Vector")),
-                lex("t", "button", "id", "foredir", "params", lex("t", "+", "oc", check_cb("foredir", "", list("+", "-")))),
-                lex("t", "popup", "id", "foretgt", "params", lex("t", targets[0], "op", targets, "w", 110, "och", targets_cb("forevecs"))),
-                lex("t", "popup", "id", "forevecs", "params", lex("t", self_vecs[0], "op", self_vecs, "w", 110))
-            )),
-            lex("t", "hlayout", "child", list(
-                lex("t", "label", "params", lex("t", "Up Vector")),
-                lex("t", "button", "id", "updir", "params", lex("t", "+", "oc", check_cb("updir", "", list("+", "-")))),
-                lex("t", "popup", "id", "uptgt", "params", lex("t", targets[0], "op", targets, "w", 110, "och", targets_cb("upvecs"))),
-                lex("t", "popup", "id", "upvecs", "params", lex("t", self_vecs[1], "op", self_vecs, "w", 110))
-            ))
-        )),
-        lex("t", "vlayout", "id", "spin", "params", lex("e", false), "child", list(
-            lex("t", "hlayout", "child", list(
-                lex("t", "label", "params", lex("t", "Max variation(rad/s)")),
-                lex("t", "field", "id", "maxvar", "params", lex("t", "0.004")),
-                // rad/s to rpm -> rad * (60 / 2pi)
-                lex("t", "label", "params", lex("t", "Max error(deg)")),
-                lex("t", "field", "id", "maxerr", "params", lex("t", "0.4"))
-            )),
-            lex("t", "hlayout", "child", list(
-                lex("t", "label", "params", lex("t", "Spin rate(rpm)")),
-                lex("t", "field", "id", "spinrate", "params", lex("t", "10")),
-                lex("t", "button", "id", "spintype", "params", lex("t", "Spin type: RCS", "oc", check_cb("spintype", "Spin type: ", list("RCS", "stage")))),
-                lex("t", "button", "id", "stageafter", "params", lex("t", "Stage after: True", "oc", check_cb("stageafter", "Stage after: ")))
-            ))
-        ))
-
+set widgets:attitude to lex("t", "vbox", "id", "attitude", "params", lex("v", false, "p", recn(5), "m", recnn(0,5,0,0), "w", 400), "child", list(
+    lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
+        lex("t", "button", "id", "engage_check", "params", lex("t", "Engage: True", "m", recnn(0,5,0,0), "h", 18, "w", 127, "oc", enabled_check_cb("engage_check", "typebox", "Engage: "))),
+        lex("t", "button", "id", "lock_check", "params", lex("t", "Lock: True", "m", recnn(0,5,0,0), "h", 18, "w", 126, "oc", check_cb("lock_check", "Lock: "))),
+        lex("t", "button", "id", "spin_check", "params", lex("t", "Spin: False", "h", 18, "w", 127, "oc", enabled_check_cb("spin_check", "spin", "Spin: ")))
     )),
-    lex("t", "vlayout", "child", list(
-        lex("t", "button", "params", lex("t", "Execute", "oc", execute_attitude_cb@)),
-        lex("t", "button", "params", lex("t", "Add event", "oc", add_attitude_event_cb@))
+    lex("t", "vlayout", "id", "typebox", "child", list(
+        lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
+            lex("t", "label", "params", lex("t", "Fore Vector", "w", 101)),
+            lex("t", "button", "id", "foredir", "params", lex("t", "+", "h", 18, "w", 26, "m", recnn(0,5,0,0), "oc", check_cb("foredir", "", list("+", "-")))),
+            lex("t", "popup", "id", "foretgt", "params", lex("t", targets[0], "h", 18, "w", 126, "m", recnn(0,5,0,0), "op", targets, "och", targets_cb("forevecs"))),
+            lex("t", "popup", "id", "forevecs", "params", lex("t", self_vecs[0], "h", 18, "w", 127, "op", self_vecs))
+        )),
+        lex("t", "hlayout", "child", list(
+            lex("t", "label", "params", lex("t", "Up Vector", "w", 101)),
+            lex("t", "button", "id", "updir", "params", lex("t", "+", "h", 18, "w", 26, "m", recnn(0,5,0,0), "oc", check_cb("updir", "", list("+", "-")))),
+            lex("t", "popup", "id", "uptgt", "params", lex("t", targets[0], "h", 18, "w", 126, "m", recnn(0,5,0,0), "op", targets, "och", targets_cb("upvecs"))),
+            lex("t", "popup", "id", "upvecs", "params", lex("t", self_vecs[1], "h", 18, "w", 126, "op", self_vecs))
+        ))
     ))
 )).
 
@@ -132,10 +102,6 @@ function targets_cb {
     }.
 }
 
-function execute_attitude_cb {
-    mlog:add(create_attitude_code()).
-}
-
 function check_cb {
     parameter id_button, prefix to "", states to list("True", "False").    
     return {
@@ -158,32 +124,6 @@ function enabled_check_cb {
             set wid[id_box]:enabled to true.
         }
     }.
-}
-
-function add_event {
-    parameter id, ut, code.
-    if (is_datetime(ut)) {
-        set ut to datetime_to_sec(ut).
-    } else if (is_eta(ut)) {
-        set ut to time:seconds + eta_to_sec(ut).
-    } else {
-        set ut to time:seconds + ut:tonumber(0).
-    }
-
-    if (id = "") { 
-        mlog:add("Event ID is empty!").
-        return.
-    }
-
-    write_lf(list(ut, code), EVENTS_PATH+id).
-    mlog:add("Event added: " + id).
-}
-
-function add_attitude_event_cb {
-    local id to wid:atteventid:text.
-    //local ut to choose wid:eventut:text:tonumber(0) if is_datetime(wid:eventut:text) else datetime_to_sec(wid:eventut:text).
-    local ut to wid:atteventut:text.
-    add_event(id, ut, create_attitude_code()).
 }
 
 function create_attitude_code {

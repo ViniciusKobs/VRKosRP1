@@ -8,8 +8,6 @@ runoncepath("0:/libs/util").
 local widgets to lex().
 runpath("0:/programs/probectrl/components/titlebar", widgets, env, wid, wcl, mlog).
 runpath("0:/programs/probectrl/components/tabs", widgets, env, wid, wcl, mlog).
-runpath("0:/programs/probectrl/components/attitude", widgets, env, wid, wcl, mlog).
-runpath("0:/programs/probectrl/components/maneuver", widgets, env, wid, wcl, mlog).
 runpath("0:/programs/probectrl/components/events", widgets, env, wid, wcl, mlog).
 runpath("0:/programs/probectrl/components/rcs", widgets, env, wid, wcl, mlog).
 
@@ -21,8 +19,6 @@ create_element(wid, wcl, list(), lex(
         widgets:titlebar,
         lex("t", "vlayout", "id", "cont", "child", list(
             widgets:tabs,
-            widgets:attitude,
-            widgets:maneuver,
             widgets:events,
             widgets:rcs
         ))

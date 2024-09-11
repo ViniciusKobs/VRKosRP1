@@ -60,33 +60,21 @@ local rcs_maneuver_command to (
     "}"
 ).
 
-set widgets:maneuver to lex("t", "hlayout", "id", "maneuver", "params", lex("v", false, "p", recn(5)), "child", list(
-    lex("t", "vbox", "params", lex("p", recn(5), "m", recnn(0,5,0,0), "w", 400), "child", list(
-        lex("t", "hlayout", "child", list(
-            lex("t", "label", "params", lex("t", "Event UT (s|date)")),
-            lex("t", "field", "id", "maneventut", "params", lex("t", "")),
-            lex("t", "label", "params", lex("t", "Event ID")),
-            lex("t", "field", "id", "maneventid", "params", lex("t", ""))
-        )),
-        lex("t", "hlayout", "child", list(
-            lex("t", "button", "id", "thrust_check", "params", lex("t", "Thrust: Engine", "oc", thrust_check_cb@)),
-            lex("t", "button", "id", "ullage_check", "params", lex("t", "Ullage: True", "oc", enabled_check_cb("ullage_check", "ullagebox", "Ullage: "))),
-            lex("t", "button", "id", "ignition_check", "params", lex("t", "Ignition: True", "oc", check_cb("ignition_check", "Ignition: ")))
-        )),
-        lex("t", "hlayout", "id", "ullagebox", "child", list(
-            lex("t", "label", "params", lex("t", "Ullage time(s)")),
-            lex("t", "field", "id", "ullage_time", "params", lex("t", "5")),
-            lex("t", "label", "params", lex("t", "Ullage type")),
-            lex("t", "popup", "id", "ullage_type", "params", lex("t", ullage_types[0], "op", ullage_types))
-        )),
-        lex("t", "hlayout", "id", "spoolbox", "child", list(
-            lex("t", "label", "params", lex("t", "Spool-up time(s)")),
-            lex("t", "field", "id", "spool_time", "params", lex("t", "0"))
-        ))
+set widgets:maneuver to lex("t", "vbox", "id", "maneuver", "params", lex("v", false, "p", recn(5), "m", recnn(0,5,0,0), "w", 400), "child", list(
+    lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
+        lex("t", "button", "id", "thrust_check", "params", lex("t", "Thrust: Engine", "m", recnn(0,5,0,0), "h", 18, "w", 127, "oc", thrust_check_cb@)),
+        lex("t", "button", "id", "ullage_check", "params", lex("t", "Ullage: True", "m", recnn(0,5,0,0), "h", 18, "w", 126, "oc", enabled_check_cb("ullage_check", "ullagebox", "Ullage: "))),
+        lex("t", "button", "id", "ignition_check", "params", lex("t", "Ignition: True", "h", 18, "w", 127, "oc", check_cb("ignition_check", "Ignition: ")))
     )),
-    lex("t", "vlayout", "child", list(
-        lex("t", "button", "params", lex("t", "Execute", "oc", execute_maneuver_cb@)),
-        lex("t", "button", "params", lex("t", "Add event", "oc", add_maneuver_event_cb@))
+    lex("t", "hlayout", "id", "ullagebox", "params", lex("m", recnn(0,0,5,0)), "child", list(
+        lex("t", "label", "params", lex("t", "Ullage time(s)", "w", 96)),
+        lex("t", "field", "id", "ullage_time", "params", lex("t", "5", "p", recn(5,0), "h", 18, "w", 96, "m", recnn(0,5,0,0))),
+        lex("t", "label", "params", lex("t", "Ullage type", "w", 96)),
+        lex("t", "popup", "id", "ullage_type", "params", lex("t", ullage_types[0], "h", 18, "w", 97, "op", ullage_types))
+    )),
+    lex("t", "hlayout", "id", "spoolbox", "child", list(
+        lex("t", "label", "params", lex("t", "Spool-up time(s)")),
+        lex("t", "field", "id", "spool_time", "params", lex("t", "0", "p", recn(5,0), "w", 193))
     ))
 )).
 
@@ -104,17 +92,6 @@ function thrust_check_cb {
         set wid:ullage_check:enabled to true.
         set wid:ignition_check:enabled to true.
     }
-}
-
-function execute_maneuver_cb {
-    local code to create_maneuver_code().
-    create("1:test"+round(time:seconds)):write(code).
-}
-
-function add_maneuver_event_cb {
-    local id to wid:maneventid:text.
-    local ut to wid:maneventut:text.
-    add_event(id, ut, create_maneuver_code()).
 }
 
 // DIDN'T TESTED ALL BRANCHES OF THIS FUNCTION
