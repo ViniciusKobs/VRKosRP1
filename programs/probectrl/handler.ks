@@ -7,27 +7,34 @@
 local GDT to lex().
 
 function main {
+    print("press q to exit").
     local evs to list().
     for f in open("1:evs"):lex:values {
         local c to f:readall:string:split(char(10)).
         log c to "1:log".
-        evs:add(list(f:name, c[0]:tonumber(0), eval(c[1]))).
+        evs:add(list(f:name, c[0]:tonumber(0), eval(c[1]), true)).
     }
     until terminal:input:haschar and terminal:input:getchar = "q" {
         local rm to list().
         for e in evs {
+            if e[3] {
+                print("s: " + e[0]).
+                set e[3] to false.
+            }
             if e[1] <= time:seconds {
-                if(e[2](GDT)) {
-                    rm:add(e).
-                }
+                if(e[2](GDT)) { rm:add(e). }
             }
         }
         for e in rm {
+            print("f: " + e[0]).
             evs:remove(evs:find(e)).
             deletepath("1:evs/"+e[0]).
         }
         wait 0.
     }
+    local f to open("1:env/boot").
+    f:clear(). f:write("0:programs/bootmgr/main").
+    reboot.
 }
 
 // run string code

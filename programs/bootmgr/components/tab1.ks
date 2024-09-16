@@ -11,6 +11,7 @@ local bootpop_list to lex(
     "ascent", "0:/programs/ascent/main",
     "pegas", "0:/programs/pegasgui/main",
     "probectrl", "0:/programs/probectrl/main",
+    "handler", "1:/handler",
     "none", ""
 ).
 

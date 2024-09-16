@@ -8,6 +8,7 @@ local tgt_vecs to list("Position", "Velocity", "Relative", "Fore", "Up", "Right"
 local node_vecs to list("Magnitude").
 local abs_vecs to list("X", "Y", "Z").
 local body_vecs to map(list_bodies(), {parameter b. return b:name.}).
+local spin_types to list("RCS", "Stage").
 
 local target_vecs to lex(
     "self_fore", "%ship:facing:forevector", // 0: Self Fore 
@@ -19,8 +20,8 @@ local target_vecs to lex(
     "surface_east", "%vcrs(up:vector,north:vector)", // 5: Surface East
 
     "orbit_prograde", "%prograde:vector", // 6: Orbit Prograde
-    "orbit_normal", "%-prograde:rightvector", // 7: Orbit Normal
-    "orbit_radial", "%-prograde:upvector", // 8: Orbit Radial
+    "orbit_normal", "%(-prograde:rightvector)", // 7: Orbit Normal
+    "orbit_radial", "%(-prograde:upvector)", // 8: Orbit Radial
 
     "target_position", "%target:position-ship:position", // 9: Target Position
     "target_velocity", "%target:velocity:orbit", // 10: Target Velocity
@@ -29,7 +30,7 @@ local target_vecs to lex(
     "target_up", "%target:facing:upvector", // 13: Target Up
     "target_right", "%target:facing:rightvector", // 14: Target Right
 
-    "node_magnitude", "choose ship:facing:forevector if (not hasnode) else %node:deltav", // 15: Node Magnitude
+    "node_magnitude", "choose ship:facing:forevector if (not hasnode) else %nextnode:deltav", // 15: Node Magnitude
 
     "absolute_x", "%v(1,0,0)", // 16: Absolute X
     "absolute_y", "%v(0,1,0)", // 17: Absolute Y
@@ -39,14 +40,13 @@ local target_vecs to lex(
 ).
 
 local cb_structure to "set RAX to {parameter data. ?code?}.".
-local unlock_steering_command to "unlock steering.".
+local unlock_steering_command to "unlock steering. return true.".
 local lock_steering_command to "lock steering to lookdirup(?fore?,?up?).".
 local set_steering_command to "local _fore to ?fore?. local _up to ?up?. lock steering to lookdirup(_fore,_up).".
 local rcs_spin_command to "rcs on. set ship:control:roll to 1.".
-local rcs_stage_command to "stage.".
 // 500 chars long for each event + handler
 local spin_command to (
-    "if (not data:haskey("+char(34)+"?id?"+char(34)+")) {?steeringcommand? set data:?id? to list(true, false).} " +
+    "if (not data:haskey("+char(34)+"?id?"+char(34)+")) {?steeringcommand? set data:?id? to list(true, false). wait .1.} " +
     "if (data:?id?[0] and ship:angularvel:mag<=?maxvariation? and abs(steeringmanager:angleerror)<=?maxerror?) {unlock steering. ?spintypecommand? set data:?id? to list(false, true).} " +
     "if (data:?id?[1] and ship:angularvel:mag>=?spinrate?) {set ship:control:roll to 0. ?stageafter? return true.} return false."
 ).
@@ -64,11 +64,26 @@ set widgets:attitude to lex("t", "vbox", "id", "attitude", "params", lex("v", fa
             lex("t", "popup", "id", "foretgt", "params", lex("t", targets[0], "h", 18, "w", 126, "m", recnn(0,5,0,0), "op", targets, "och", targets_cb("forevecs"))),
             lex("t", "popup", "id", "forevecs", "params", lex("t", self_vecs[0], "h", 18, "w", 127, "op", self_vecs))
         )),
-        lex("t", "hlayout", "child", list(
+        lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
             lex("t", "label", "params", lex("t", "Up Vector", "w", 101)),
             lex("t", "button", "id", "updir", "params", lex("t", "+", "h", 18, "w", 26, "m", recnn(0,5,0,0), "oc", check_cb("updir", "", list("+", "-")))),
             lex("t", "popup", "id", "uptgt", "params", lex("t", targets[0], "h", 18, "w", 126, "m", recnn(0,5,0,0), "op", targets, "och", targets_cb("upvecs"))),
             lex("t", "popup", "id", "upvecs", "params", lex("t", self_vecs[1], "h", 18, "w", 126, "op", self_vecs))
+        )),
+        lex("t", "vlayout", "id", "spin", "params", lex("e", false, "w", 400), "child", list(
+            lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
+                lex("t", "label", "params", lex("t", "Max Variation", "w", 96)),
+                lex("t", "field", "id", "maxvar", "params", lex("t", "0.004", "w", 96, "p", recn(5,0), "m", recnn(0,5,0,0))),
+                lex("t", "label", "params", lex("t", "Max Error", "w", 96)),
+                lex("t", "field", "id", "maxerr", "params", lex("t", "0.4", "p", recn(5,0), "w", 96))
+            )),
+            lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(
+                lex("t", "label", "params", lex("t", "Spin RPM", "w", 96)),
+                lex("t", "field", "id", "spinrate", "params", lex("t", "10", "w", 96, "p", recn(5,0), "m", recnn(0,5,0,0))),
+                lex("t", "label", "params", lex("t", "Spin Type", "w", 96)),
+                lex("t", "popup", "id", "spintype", "params", lex("t", spin_types[0], "op", spin_types, "p", recn(5,0), "w", 96, "h", 18))
+            )),
+            lex("t", "button", "id", "stageafter", "params", lex("t", "Stage after: False", "h", 18, "w", 389, "oc", check_cb("stageafter", "Stage after: ")))
         ))
     ))
 )).
@@ -129,16 +144,22 @@ function enabled_check_cb {
 function create_attitude_code {
     local disengage to wid:engage_check:text = "Engage: False".
 
-    if (disengage) { return unlock_steering_command. }
+    if (disengage) { return cb_structure:replace("?code?", unlock_steering_command). }
 
     local id to wid:eventid:text.
     local _lock to wid:lock_check:text = "Lock: True".
     local spin to wid:spin_check:text = "Spin: True".
+
+    if (spin and id = "") {
+        mlog:add("Event ID is empty!").
+        return "".
+    }
+
     local maxvariation to wid:maxvar:text.
     local maxerror to wid:maxerr:text.
     local rpm to wid:spinrate:text:tonumber(10).
     local spinrate to format_float(rpm * ((2*constant:pi)/60)).
-    local rcsspin to wid:spintype:text = "Spin type: RCS".
+    local rcsspin to wid:spintype:text = "RCS".
     local stageafter to wid:stageafter:text = "Stage after: True".
 
     local foredir to wid:foredir:text = "+".
@@ -167,8 +188,8 @@ function create_attitude_code {
         :replace("?steeringcommand?", steering_command)
         :replace("?maxvariation?", maxvariation)
         :replace("?maxerror?", maxerror)
-        :replace("?spintypecommand?", choose rcs_spin_command if rcsspin else rcs_stage_command)
+        :replace("?spintypecommand?", choose rcs_spin_command if rcsspin else "stage.")
         :replace("?spinrate?", spinrate)
-        :replace("?stageafter?", choose rcs_stage_command if stageafter else "")
+        :replace("?stageafter?", choose "stage." if stageafter else "")
     ).
 }

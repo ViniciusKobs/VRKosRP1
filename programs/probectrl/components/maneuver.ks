@@ -68,7 +68,7 @@ set widgets:maneuver to lex("t", "vbox", "id", "maneuver", "params", lex("v", fa
     )),
     lex("t", "hlayout", "id", "ullagebox", "params", lex("m", recnn(0,0,5,0)), "child", list(
         lex("t", "label", "params", lex("t", "Ullage time(s)", "w", 96)),
-        lex("t", "field", "id", "ullage_time", "params", lex("t", "5", "p", recn(5,0), "h", 18, "w", 96, "m", recnn(0,5,0,0))),
+        lex("t", "field", "id", "ullage_time", "params", lex("t", "5", "p", recn(5,0), "w", 96, "m", recnn(0,5,0,0))),
         lex("t", "label", "params", lex("t", "Ullage type", "w", 96)),
         lex("t", "popup", "id", "ullage_type", "params", lex("t", ullage_types[0], "h", 18, "w", 97, "op", ullage_types))
     )),
@@ -97,7 +97,12 @@ function thrust_check_cb {
 // DIDN'T TESTED ALL BRANCHES OF THIS FUNCTION
 // GONNA FIND OUT IF IT WORKS WHEN I USE IT
 function create_maneuver_code {
-    local id to wid:maneventid:text.    
+    local id to wid:eventid:text.    
+
+    if (id = "") {
+        mlog:add("Event ID is empty!").
+        return "".
+    }
 
     local use_rcs to wid:thrust_check:text = "Thrust: RCS".
     if (use_rcs) {

@@ -3,6 +3,9 @@ parameter widgets, env, wid, wcl, mlog.
 local events to list("id: eta - type", "id2: eta2 - type2").
 local event_types to list("Stage", "Range", "Callback", "Shutdown").
 
+local stage_command to "set RAX to {parameter _d. stage. return true.}.".
+local range_command to "set RAX to {parameter _d. if (core:part:hasmodule("+char(34)+"modulerangesafety"+char(34)+")) {core:part:getmodule("+char(34)+"modulerangesafety"+char(34)+"):doaction("+char(34)+"range safety"+char(34)+", true). return true.}".
+
 set widgets:other to lex("t", "vlayout", "id", "other", "params", lex("m", recnn(0,5,0,0), "w", 400), "child", list(
     lex("t", "vbox", "params", lex("p", recn(5), "m", recnn(0,0,5,0)), "child", list(
         lex("t", "hlayout", "params", lex("m", recnn(0,0,5,0)), "child", list(

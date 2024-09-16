@@ -13,7 +13,7 @@ runpath("0:/programs/probectrl/view", env, wid, wcl, mlog).
 
 local window to wid:window.
 
-function main {
+local function main {
     window:show().
     local t0 to time:seconds.
     until env:should_exit {
