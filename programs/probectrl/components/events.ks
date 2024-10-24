@@ -7,6 +7,7 @@ local LOCAL_HANDLER_PATH to "1:handler".
 local REFACTOR_PATH to "0:scripts/refactor".
 
 local current_events to get_current_events().
+local handler_is_installed to exists(LOCAL_HANDLER_PATH).
 
 local events_widgets to lex().
 runpath("0:/programs/probectrl/components/other", events_widgets, env, wid, wcl, mlog).
@@ -22,9 +23,9 @@ set widgets:events to lex("t", "hlayout", "id", "events", "params", lex("p", rec
         )),
         lex("t", "vbox", "params", lex("p", recn(5), "m", recnn(0,0,5,0)), "child", list(
             lex("t", "hlayout", "child", list(
-                lex("t", "popup", "id", "curevents", "params", lex("t", choose "" if current_events:values:length = 0 else current_events:values[0], "op", current_events:values, "w", 192, "m", recnn(0,5,0,0))),
-                lex("t", "button", "params", lex("t", "Remove", "w", 94, "m", recnn(0,5,0,0), "oc", remove_cb@)),
-                lex("t", "button", "params", lex("t", "Update", "w", 94, "oc", update_current_events@))
+                lex("t", "popup", "id", "curevents", "params", lex("t", choose "" if current_events:values:length = 0 else current_events:values[0], "op", current_events:values, "w", 232, "h", 18, "m", recnn(0,5,0,0))),
+                lex("t", "button", "params", lex("t", "Remove", "w", 74, "h", 18, "m", recnn(0,5,0,0), "oc", remove_cb@)),
+                lex("t", "button", "params", lex("t", "Update", "w", 74, "h", 18, "oc", update_current_events@))
             ))
         )),
         lex("t", "vbox", "params", lex("p", recn(5), "m", recnn(0,0,5,0)), "child", list(
@@ -40,14 +41,15 @@ set widgets:events to lex("t", "hlayout", "id", "events", "params", lex("p", rec
         events_widgets:maneuver
     )),
     lex("t", "vlayout", "params", lex("m", recnn(0,5,0,0)), "child", list(
-        lex("t", "button", "params", lex("t", "Install", "h", 20, "m", recnn(0,0,5,0), "oc", install_cb@)),
-        lex("t", "button", "params", lex("t", "Run", "h", 20, "m", recnn(0,0,5,0), "oc", run_handler_cb@)),
-        lex("t", "button", "params", lex("t", "Add event", "h", 20, "m", recnn(0,0,5,0), "oc", add_event_cb@)),
-        lex("t", "button", "params", lex("t", "Exec event", "h", 20, "m", recnn(0,0,5,0), "oc", execute_event_cb@))
-        // TODO: add button to clear current events
+        lex("t", "button", "id", "installbtn", "params", lex("t", "Install", "h", 20, "m", recnn(0,0,5,0), "v", not handler_is_installed, "oc", install_cb@)),
+        lex("t", "button", "id", "runbtn", "params", lex("t", "Run", "h", 20, "m", recnn(0,0,5,0), "v", handler_is_installed, "oc", run_handler_cb@)),
+        lex("t", "button", "params", lex("t", "Exec event", "h", 20, "m", recnn(0,0,5,0), "oc", execute_event_cb@)),
+        lex("t", "button", "id", "addevbtn", "params", lex("t", "Add event", "h", 20, "m", recnn(0,0,5,0), "v", handler_is_installed, "oc", add_event_cb@)),
+        lex("t", "button", "id", "clearevsbtn", "params", lex("t", "Clear events", "h", 20, "m", recnn(0,0,5,0), "v", handler_is_installed, "oc", clear_events_cb@))
     ))
 )).
 
+// doesn't check if the cpu has enough memory to install the handler
 function install_cb {
     if (exists(LOCAL_HANDLER_PATH)) {
         deletepath(LOCAL_HANDLER_PATH).
@@ -56,6 +58,12 @@ function install_cb {
         createdir(EVENTS_PATH).
     }
     runpath(REFACTOR_PATH, HANDLER_PATH, LOCAL_HANDLER_PATH).
+
+    set wid:installbtn:visible to false.
+    set wid:runbtn:visible to true.
+    set wid:addevbtn:visible to true.
+    set wid:clearevsbtn:visible to true.
+
     mlog:add("Handler installed").
 }
 
@@ -159,4 +167,11 @@ function event_tab_switch {
         set wid:attitude:visible to tab = "attitude".
         set wid:maneuver:visible to tab = "maneuver".
     }.
+}
+
+function clear_events_cb {
+    deletepath(EVENTS_PATH).
+    createdir(EVENTS_PATH).
+    update_current_events().
+    mlog:add("Events cleared").
 }
