@@ -51,48 +51,4 @@ function eval {
     return RAX.
 }
 
-// attitude event structure
-// 0: id - str
-// 1: ut(s) - scalar
-// 2: type code - scalar
-// 3: disengage? - bool
-// 4: steering command - str
-// 5: spin? - bool
-// 6: min variation(rad/s) - scalar
-// 7: spin type - scalar
-// 8: spin rotation(rad/s) - scalar
-// 9: stage after spin? - bool
-
-//function acb {
-    //parameter p.
-    //if (p[3]) {
-        //unlock steering.
-        //return true.
-    //}
-    //if (not GDT:haskey(p[0])) {
-        //rsc(p[4]).
-        //set GDT[p[0]] to true.
-    //}
-    //if (not p[5][0]) {
-        //return true.
-    //}
-    //if (ship:angularvel <= p[6] and GDT[p[0]]) {
-        //unlock steering.
-        //set GDT[p[0]] to false.
-    //}
-    //if (not GDT[p[0]] and ship:angularvel < p[8]) {
-        //if (p[7] = 1) {
-            //set ship:control:roll to 1.
-        //}
-        //if (p[7] = 2) {
-            //stage.
-            //wait until maxthrust = 0.
-        //}
-        //return false.
-    //}
-    //if (p[9]) {
-        //stage.
-    //}
-    //return true.
-//}
 main().
