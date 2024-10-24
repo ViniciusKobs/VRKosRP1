@@ -17,11 +17,11 @@ function main {
     until terminal:input:haschar and terminal:input:getchar = "q" {
         local rm to list().
         for e in evs {
-            if e[3] {
-                print("s: " + e[0]).
-                set e[3] to false.
-            }
             if e[1] <= time:seconds {
+                if e[3] {
+                    print("s: " + e[0]).
+                    set e[3] to false.
+                }
                 if(e[2](GDT)) { rm:add(e). }
             }
         }

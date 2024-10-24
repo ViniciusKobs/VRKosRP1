@@ -104,7 +104,7 @@ function in_range {
 
 function format_int {
     parameter num, lp is 2.
-    local nstr to num:tostring.
+    local nstr to num:tostring:split(".")[0].
     return "":padright(max(0, lp - nstr:length)):replace(" ", "0") + nstr.
 }
 
@@ -194,6 +194,7 @@ function rssdate {
     return year + "-" + format_int(mon) + "-" + format_int(day).
 }
 
+
 function is_datetime {
     parameter datetime.
     return datetime:matchespattern("^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$").
@@ -202,6 +203,38 @@ function is_datetime {
 function is_eta {
     parameter _eta.
     return _eta:matchespattern("^(\d+d\s*)?(\d+h\s*)?(\d+m\s*)?(\d+s\s*)?$").
+}
+
+function sec_to_datetime {
+    parameter s is time:seconds,
+    year is 1951,
+    mon is 1,
+    day is 1,
+    hour is 0,
+    mins is 0,
+    sec is 0.
+
+    set sec to sec + s.
+
+    set mins to mins + floor(sec / 60).
+    set sec to mod(sec, 60).
+
+    set hour to hour + floor(mins / 60).
+    set mins to mod(mins, 60).
+
+    set day to day + floor(hour / 24).
+    set hour to mod(hour, 24).
+
+    until (day <= days_in_month(mon, year)) {
+        set day to day - days_in_month(mon, year).
+        set mon to mon + 1.
+        if (mon > 12) {
+            set mon to 1.
+            set year to year + 1.
+        }
+    }   
+
+    return year + "-" + format_int(mon) + "-" + format_int(day) + " " + format_int(hour) + ":" + format_int(mins) + ":" + format_int(sec).
 }
 
 function datetime_to_sec {
@@ -236,6 +269,24 @@ function datetime_to_sec {
     return seconds.
 }
 
+function sec_to_eta {
+    parameter s is time:seconds.
+
+    if (s <= 0) { return "0s".}
+
+    local sec to mod(s, 60).
+    local mins to mod(floor(s / 60), 60).
+    local hour to mod(floor(s / 3600), 24).
+    local day to floor(s / 86400).
+
+    return (
+        (choose "" if day = 0 else day + "d ") +
+        (choose "" if hour = 0 else hour + "h ") +
+        (choose "" if mins = 0 else mins + "m ") +
+        (choose "" if sec = 0 else format_float(sec) + "s ")
+    ).
+}
+
 function eta_to_sec {
     parameter _eta.
 
@@ -250,9 +301,6 @@ function eta_to_sec {
 
     local ops to filter(_eta, {parameter c. return "dhms":contains(c).}).
     local split to _eta:replace(" ",""):replace("d",":"):replace("h",":"):replace("m",":"):replace("s",""):split(":").
-
-    print(ops).
-    print(split).
 
     from {local i to 0.} until (i>=ops:length) step {set i to i + 1.} do {
         set vals[ops[i]] to split[i]:tonumber(0).

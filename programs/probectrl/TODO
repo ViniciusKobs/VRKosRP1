@@ -1,2 +1,3 @@
 make this button only appear if handler is not installed
 add button to clear current events
+don't allow to add events if handler is not installed locally
